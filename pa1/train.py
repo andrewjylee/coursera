@@ -1,5 +1,7 @@
 import sys
 import count_freqs
+from collections import defaultdict
+import operator
 
 
 def e(counter, x, y):
@@ -70,41 +72,36 @@ def test_baseline(counter, input_filename, output_filename):
     output_f.close()
     return
 
-def viterbi(counter, input_filename, output_filename):
+def viterbi(counter, sentence, n, output_f):
     tags = ['O', 'I-GENE']
-
-    pi[0] = list()
-    pi[0]["*"] = list()
-    bp = list()
-    bp[0] = list()
-    bp[0]["*"] = list()
-    pi[0]["*"]["*"] = 1
-    bp[0]["*"]["*"] = 1
-
-    input_f = open(input_filename, "r")
-    output_f = open(output_filename, "w")
-    line = input_f.readline()
-    k = 1
+    Y = []
+    pi = [defaultdict(float) for i in range(0, n+1)]
+    bp = [defaultdict(str) for i in range(0, n)]
+    pi[0][("*", "*")] = 1
     prev2 = "*"
     prev1 = "*"
-    while line:
-        word = line.strip("\n")
-        if word:
-            values = [pi[k-1][prev2][prev1] * q(tag, prev2, prev1) * e(counter, word, tag) for tag in tags]
-            k += 1
+
+    for i in xrange(n):
+        x = sentence[i]
+        for tag in tags:
+            pi[i+1][(prev1, tag)] = pi[i][(prev2, prev1)] * q(counter, tag, prev2, prev1) * e(counter, x, tag) * 10000
+        next_tag = max(pi[i+1].iteritems(), key=operator.itemgetter(1))[0]
+        print x, next_tag[1]
+        output_f.write(x + " " + next_tag[1] + "\n")
+        prev2 = next_tag[0]
+        prev1 = next_tag[1]
+        Y.append(prev1)
+
+
+
+
+
+        #pi[i+1] = [pi[i][(prev2, prev1)] * q(counter, tag, prev2, prev1) * e(counter, x, tag) for tag in tags]
 
             
-            print values
-            
-            #e_values = [e(counter, word, tag) for tag in tags]
-            #tag = tags[e_values.index(max(e_values))]
-            #output_f.write(word + " " + tag + " \n")
-        else:
-            output_f.write(line)
-
-        line = input_f.readline()
-    input_f.close()
-    output_f.close()
+        #e_values = [e(counter, x, tag) for tag in tags]
+        #tag = tags[e_values.index(max(e_values))]
+        #output_f.write(x + " " + tag + " \n")
  
 
 def test_corpus_iterator(fd):
@@ -134,17 +131,20 @@ def test_sentence_iterator(iterator):
     if curr_sent:
         yield curr_sent
 
-def viterbi_wrapper(input_f, output_f, counter):
-    test_f = test_corpus_iterator(open(input_f))
-    test_sentences = test_sentence_iterator(test_f)
-    output_f = open(output_f, "w")
+def viterbi_wrapper(input_fname, output_fname, counter):
+    input_f = test_corpus_iterator(open(input_fname))
+    test_sentences = test_sentence_iterator(input_f)
+    output_f = open(output_fname, "w")
 
     for sentence in test_sentences:
-        #print sentence
+        viterbi(counter, sentence, len(sentence), output_f)
+        output_f.write("\n")
 
     #viterbi(counter, "gene.test", "gene_test.p2.out")
     #q(counter, 'O', 'O', 'O')
 
+    input_f.close()
+    output_f.close()
 
 
 
@@ -166,7 +166,8 @@ def main():
     counter.train(input_f)
 
     #test_baseline(counter, "gene.dev", "gene_dev.p1.out")
-    viterbi_wrapper("gene.test", "gene_test.p2.out", counter)
+    #viterbi_wrapper("gene.test", "gene_test.p2.out", counter)
+    viterbi_wrapper("gene.dev", "gene_test.p2.out", counter)
 
 
 
