@@ -9,7 +9,6 @@ def get_low_freq_words(counter):
 
     return low_words
 
-
 def get_words(tree):
     words = []
     if isinstance(tree, basestring):
@@ -20,23 +19,10 @@ def get_words(tree):
         words.append(tree[1])
         return words
 
-        
-    
 def replace(tree):
     words = get_words(tree)
 
 def replace_wrapper(input_fn, output_fn, low_words):
-    """
-    input_f = open(input_fn, "r")
-    l = input_f.readline()
-    while l:
-        line = l.strip()
-        if line:
-            
-
-        l = input_f.readline()
-    """
-
     output_f = open(output_fn, "w")
 
     for l in open(input_fn):
@@ -48,11 +34,6 @@ def replace_wrapper(input_fn, output_fn, low_words):
                 new_line = new_line.replace("\""+word+"\"", "\"_RARE_\"", 1)
         output_f.write(new_line)
 
-
-
-
-
-    
 def convert(input_filename, output_filename):
     counter = Counts()
     for l in open(input_filename):

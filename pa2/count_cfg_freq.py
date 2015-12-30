@@ -14,6 +14,7 @@ class Counts:
     self.unary = {}
     self.binary = {}
     self.nonterm = {}
+    self.wordcount = {}
 
   def show(self):
     for symbol, count in self.nonterm.iteritems():
@@ -51,7 +52,9 @@ class Counts:
       y1 = tree[1]
       key = (symbol, y1)
       self.unary.setdefault(key, 0)
+      self.wordcount.setdefault(y1, 0)
       self.unary[key] += 1
+      self.wordcount[y1] += 1
 
 def main(parse_file):
   counter = Counts() 
